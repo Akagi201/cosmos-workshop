@@ -34,34 +34,34 @@ B. Tendermint 是支持拜占庭容错的 PoW 共识引擎
 C. IBC 是基于哈希锁机制的跨链协议
 D. Tendermint 被全球超过 40% 的 PoS 区块链网络采用
 
-6 以下哪些 ABCI 方法不是用于执行交易的 (CD)
+6. 以下哪些 ABCI 方法不是用于执行交易的 (CD)
 A. BeginBlock
 B. CheckTx
 C. EndBlock
 D. DeliverTx
 
-7 以下哪些是 Cosmos 链节点的功能分层 (ABDE)
+7. 以下哪些是 Cosmos 链节点的功能分层 (ABDE)
 A. 共识层
 B. 连接层
 C. 会话层
 D. 网络层
 E. 应用层
 
-8 Tendermint Core 与应用层之间的通讯接口是 (B)
+8. Tendermint Core 与应用层之间的通讯接口是 (B)
 A. REST API
 B. ABCI
 C. Socket
 D. GRPC
 E. ABCI++
 
-9 以下哪些是 Tendermint Core 的特性 (BCE)
+9. 以下哪些是 Tendermint Core 的特性 (BCE)
 A. 交易的概率最终性
 B. 拜占庭容错 BFT
 C. 交易的快速最终性
 D. 基于工作量证明 PoW
 E. 交易的绝对最终性
 
-10 以下哪些说法是正确的 (BCD)
+10. 以下哪些说法是正确的 (BCD)
 A. 通过向网络增加节点可提高网络的吞吐能力
 B. ABCI++ 是对区块链网络的水平扩展
 C. 应用专有链可对链上治理机制做定制化设计
