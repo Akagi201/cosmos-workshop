@@ -1,9 +1,11 @@
 # 跨链通信协议 IBC 应用
 
+repo: <https://github.com/Akagi201/planet>
+
 ## ignite scaffold
 
 ```sh
-ignite scaffold chain planet --no-module --address-prefix planet
+ignite scaffold chain github.com/Akagi201/planet --no-module --address-prefix planet
 cd planet
 # 生成 blog 模块, 并集成 IBC
 ignite scaffold module blog --ibc
