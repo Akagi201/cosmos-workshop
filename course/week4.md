@@ -203,3 +203,186 @@ planetd q blog list-post --node tcp://localhost:26659
 
 planetd q blog list-sent-post
 ```
+
+## 不使用 ignite
+
+初始化链
+
+```sh
+planetd init earth --chain-id earth --home ~/.earth
+```
+
+创建 alice 地址
+
+```sh
+planetd keys add alice --keyring-backend test --home ~/.earth
+```
+
+```sh
+- address: planet16a2jq2epzratvrs606yxfrncsugd4u77j7hwju
+  name: alice
+  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"Ak/w8LCV8c1WJPGxkoky17LVaMqhvoao0gTCnkZ2X2me"}'
+  type: local
+
+
+**Important** write this mnemonic phrase in a safe place.
+It is the only way to recover your account if you ever forget your password.
+
+file gasp cabbage bench flat truly nice turkey manual chase view meat shiver leaf rather mansion accuse steel always battle toilet clerk hole town
+```
+
+为 alice 在 genesis 中分配 token
+
+```sh
+planetd add-genesis-account alice 1000token,100000000stake --home ~/.earth --keyring-backend test
+```
+
+通过质押让 alice 成为 validator
+
+* 将 alice 注册为 validator operator account
+* 为自己质押相应的 token(self-delegates)
+* 将 operator account 与本地节点的 pub key 做关联。
+
+```sh
+planetd gentx alice 100000000stake --chain-id earth --home ~/.earth --keyring-backend test
+```
+
+将生成的交易写入到 genesis 文件中
+
+```sh
+planetd collect-gentxs --home ~/.earth
+```
+
+启动节点
+
+```sh
+planetd start --home ~/.earth
+```
+
+类似地，启动 mars 链
+
+```sh
+planetd init mars --chain-id mars --home ~/.mars
+planetd keys add alice --keyring-backend test --home ~/.mars
+planetd add-genesis-account alice 1000token,100000000stake --home ~/.mars --keyring-backend test
+planetd gentx alice 100000000stake --chain-id mars --home ~/.mars --keyring-backend test
+planetd collect-gentxs --home ~/.mars
+planetd start --home ~/.mars
+```
+
+```sh
+- address: planet1e35a3jp8tyqew0plmxzdej8kjxfegcwrzk0knc
+  name: alice
+  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"A+9TYEG2gAEmWhuC3gpV9X3/tY1zqCdXSPaP+r2DOHtW"}'
+  type: local
+
+
+**Important** write this mnemonic phrase in a safe place.
+It is the only way to recover your account if you ever forget your password.
+
+talent wheat suspect tunnel submit sword trouble private stone mammal slam sight buddy embark thought rubber control seek measure sound opinion item toddler engage
+```
+
+修改 earth 与 mars 的配置文件的端口，避免冲突 (不明原因，上面初始化链时候配置的端口没生效，可能只对 ignite 有效？)
+
+```sh
+~/.earth/config/config.toml
+~/.earth/config/app.toml
+~/.mars/config/config.toml
+~/.mars/config/app.toml
+```
+
+初始化 relayer 配置
+
+```sh
+rly config init --home ~/.relayer
+```
+
+修改 `~/.relayer/config/config.yaml`，添加两条链的配置
+
+```yaml
+global:
+    api-listen-addr: :5183
+    timeout: 10s
+    memo: "planet"
+    light-cache-size: 20
+chains:
+    earth:
+        type: cosmos
+        value:
+            key: alice
+            keyring-backend: test
+            chain-id: earth
+            rpc-addr: http://localhost:26661
+            account-prefix: planet
+            gas-adjustment: 1.3
+            gas-prices: 0.01token
+            min-gas-amount: 0
+            debug: false
+            timeout: 20s
+            block-timeout: ""
+            output-format: json
+            sign-mode: direct
+            extra-codecs: []
+            coin-type: 118
+            broadcast-mode: batch
+    mars:
+        type: cosmos
+        value:
+            key: alice
+            keyring-backend: test
+            chain-id: mars
+            rpc-addr: http://localhost:26659
+            account-prefix: planet
+            gas-adjustment: 1.3
+            gas-prices: 0.01token
+            min-gas-amount: 0
+            debug: false
+            timeout: 20s
+            block-timeout: ""
+            output-format: json
+            sign-mode: direct
+            extra-codecs: []
+            coin-type: 118
+            broadcast-mode: batch
+paths:
+    planet:
+        src:
+            chain-id: earth
+        dst:
+            chain-id: mars
+        src-channel-filter:
+            rule: ""
+            channel-list: []
+```
+
+导入私钥
+
+```sh
+rly keys restore earth alice 'file gasp cabbage bench flat truly nice turkey manual chase view meat shiver leaf rather mansion accuse steel always battle toilet clerk hole town'
+rly keys restore mars alice 'talent wheat suspect tunnel submit sword trouble private stone mammal slam sight buddy embark thought rubber control seek measure sound opinion item toddler engage'
+```
+
+创建轻客户端
+
+```sh
+rly tx clients planet
+```
+
+创建 connection
+
+```sh
+rly tx connection planet
+```
+
+创建 channel
+
+```sh
+rly tx channel planet --src-port blog --dst-port blog --order unordered
+```
+
+启动 relayer
+
+```sh
+rly start --home ~/.relayer
+```
