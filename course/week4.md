@@ -8,20 +8,20 @@ repo: <https://github.com/Akagi201/planet>
 ignite scaffold chain github.com/Akagi201/planet --no-module --address-prefix planet
 cd planet
 # 生成 blog 模块, 并集成 IBC
-ignite scaffold module blog --ibc
+ignite scaffold module blog --ibc -y
 # 给 blog 模块添加针对 post 的 CRUD
-ignite scaffold list post title content creator --no-message --module blog
+ignite scaffold list post title content creator --no-message --module blog -y
 # 给 blog 模块添加针对 sentPost 的 CRUD
-ignite scaffold list sentPost postID title chain creator --no-message --module blog
+ignite scaffold list sentPost postID title chain creator --no-message --module blog -y
 # 给 blog 模块添加针对 timedoutPost 的 CRUD
-ignite scaffold list timedoutPost title chain creator --no-message --module blog
+ignite scaffold list timedoutPost title chain creator --no-message --module blog -y
 # 添加 IBC 发送数据包和确认数据包的结构
-ignite scaffold packet ibcPost title content --ack postID --module blog
+ignite scaffold packet ibcPost title content --ack postID --module blog -y
 ```
 
 ## manual modify code
 
-修改 `proto/blog/packet.proto` 中 `IbcPostPacketData`, 添加 `Creator`, `ignite chain build` 生成 pb.go
+修改 `proto/planet/blog/packet.proto` 中 `IbcPostPacketData`, 添加 `Creator`, `ignite chain build` 生成 pb.go
 
 在 `x/blog/keeper/msg_server_ibc_post.go` 中发送数据包前更新 `Creator`.
 
@@ -82,17 +82,17 @@ build:
 accounts:
 - name: alice
   coins:
-  - 1000token
-  - 100000000stake
+  - 10000token
+  - 1000000000stake
 - name: bob
   coins:
-  - 500token
-  - 100000000stake
+  - 5000token
+  - 1000000000stake
 faucet:
   name: bob
   coins:
-  - 5token
-  - 100000stake
+  - 500token
+  - 10000000stake
   host: 0.0.0.0:4500
 genesis:
   chain_id: earth
@@ -115,17 +115,17 @@ build:
 accounts:
 - name: alice
   coins:
-  - 1000token
-  - 1000000000stake
+  - 10000token
+  - 10000000000stake
 - name: bob
   coins:
-  - 500token
-  - 100000000stake
+  - 5000token
+  - 1000000000stake
 faucet:
   name: bob
   coins:
-  - 5token
-  - 100000stake
+  - 500token
+  - 10000000stake
   host: :4501
 genesis:
   chain_id: mars
@@ -146,7 +146,6 @@ validators:
       laddr: :26659
       pprof_laddr: :6061
   home: $HOME/.mars
-
 ```
 
 ## 启动两条链
@@ -193,7 +192,7 @@ ignite relayer connect
 ## 从 earth 链向 mars 链发送 blog 数据包
 
 ```sh
-planetd tx blog send-ibc-post blog channel-4 "Hello" "Hello Mars, I'm Alice from Earth" --from alice --chain-id earth --home ~/.earth
+planetd tx blog send-ibc-post blog channel-0 "Hello" "Hello Mars, I'm Alice from Earth" --from alice --chain-id earth --home ~/.earth
 ```
 
 ## 通过 rpc 查询结果
@@ -202,6 +201,12 @@ planetd tx blog send-ibc-post blog channel-4 "Hello" "Hello Mars, I'm Alice from
 planetd q blog list-post --node tcp://localhost:26659
 
 planetd q blog list-sent-post
+```
+
+## add updatePost
+
+```sh
+ignite scaffold packet ibcUpdatePost title content --ack ok:bool --module blog -y
 ```
 
 ## 不使用 ignite
@@ -234,7 +239,7 @@ file gasp cabbage bench flat truly nice turkey manual chase view meat shiver lea
 为 alice 在 genesis 中分配 token
 
 ```sh
-planetd add-genesis-account alice 1000token,100000000stake --home ~/.earth --keyring-backend test
+planetd add-genesis-account alice 20000token,200000000stake --home ~/.earth --keyring-backend test
 ```
 
 通过质押让 alice 成为 validator
@@ -264,7 +269,7 @@ planetd start --home ~/.earth
 ```sh
 planetd init mars --chain-id mars --home ~/.mars
 planetd keys add alice --keyring-backend test --home ~/.mars
-planetd add-genesis-account alice 1000token,100000000stake --home ~/.mars --keyring-backend test
+planetd add-genesis-account alice 20000token,200000000stake --home ~/.mars --keyring-backend test
 planetd gentx alice 100000000stake --chain-id mars --home ~/.mars --keyring-backend test
 planetd collect-gentxs --home ~/.mars
 planetd start --home ~/.mars
@@ -361,6 +366,13 @@ paths:
 ```sh
 rly keys restore earth alice 'file gasp cabbage bench flat truly nice turkey manual chase view meat shiver leaf rather mansion accuse steel always battle toilet clerk hole town'
 rly keys restore mars alice 'talent wheat suspect tunnel submit sword trouble private stone mammal slam sight buddy embark thought rubber control seek measure sound opinion item toddler engage'
+```
+
+查看 key
+
+```sh
+rly keys list earth
+rly keys list mars
 ```
 
 创建轻客户端
